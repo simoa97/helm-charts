@@ -192,7 +192,18 @@ tests:
           targetQueryValue: "1"
     asserts:
       - failedTemplate:
-          errorPattern: "(missing required field 'query'|Must validate at least one schema|'anyOf' failed)"
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when query is empty
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          connectionFromEnv: POSTGRES_CONNECTION_STRING
+          query: ""
+          targetQueryValue: "1"
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
 
   - it: fails when targetQueryValue is missing
     set:
@@ -202,7 +213,29 @@ tests:
           query: SELECT 1
     asserts:
       - failedTemplate:
-          errorPattern: "(missing required field 'targetQueryValue'|Must validate at least one schema|'anyOf' failed)"
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when targetQueryValue is empty
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          connectionFromEnv: POSTGRES_CONNECTION_STRING
+          query: SELECT 1
+          targetQueryValue: ""
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when targetQueryValue is zero
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          connectionFromEnv: POSTGRES_CONNECTION_STRING
+          query: SELECT 1
+          targetQueryValue: 0
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
 
   - it: fails when no connection mode is set
     set:
@@ -212,7 +245,7 @@ tests:
           targetQueryValue: "1"
     asserts:
       - failedTemplate:
-          errorMessage: "PostgreSQL trigger for 'consumer-foo' must set exactly one of 'connectionFromEnv', 'connectionFromSecret' or 'host' (got: none)."
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
 
   - it: fails when two connection modes are set
     set:
@@ -224,7 +257,49 @@ tests:
           targetQueryValue: "1"
     asserts:
       - failedTemplate:
-          errorMessage: "PostgreSQL trigger for 'consumer-foo' must set exactly one of 'connectionFromEnv', 'connectionFromSecret' or 'host' (got: connectionFromEnv, host)."
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when connectionFromEnv is empty
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          connectionFromEnv: ""
+          query: SELECT 1
+          targetQueryValue: "1"
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when host is empty
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          host: ""
+          port: "5432"
+          userName: keda
+          dbName: app
+          sslmode: require
+          passwordFromEnv: POSTGRES_PASSWORD
+          query: SELECT 1
+          targetQueryValue: "1"
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
+
+  - it: fails when all three connection modes are set
+    set:
+      components.consumer-foo.keda.triggers:
+        - type: postgresql
+          connectionFromEnv: POSTGRES_CONNECTION_STRING
+          connectionFromSecret:
+            name: app-db
+            key: PG_CONNECTION
+          host: postgres.example.com
+          query: SELECT 1
+          targetQueryValue: "1"
+    asserts:
+      - failedTemplate:
+          errorPattern: "(Must validate at least one schema|'anyOf' failed)"
 
   - it: fails when discrete fields are used without a password
     set:
