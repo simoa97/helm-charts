@@ -111,18 +111,9 @@ spec:
         {{- end }}
 
     {{- else if eq $trigger.type "postgresql" }}
-      {{- if not $trigger.query }}
-        {{- fail (printf "PostgreSQL trigger for '%s' is missing required field 'query'." $componentName) }}
-      {{- end }}
-      {{- if not $trigger.targetQueryValue }}
-        {{- fail (printf "PostgreSQL trigger for '%s' is missing required field 'targetQueryValue'." $componentName) }}
-      {{- end }}
       {{- $modes := list }}
-      {{- if $trigger.connectionFromEnv }}{{- $modes = append $modes "connectionFromEnv" }}{{- end }}
-      {{- if $trigger.connectionFromSecret }}{{- $modes = append $modes "connectionFromSecret" }}{{- end }}
-      {{- if $trigger.host }}{{- $modes = append $modes "host" }}{{- end }}
-      {{- if ne (len $modes) 1 }}
-        {{- fail (printf "PostgreSQL trigger for '%s' must set exactly one of 'connectionFromEnv', 'connectionFromSecret' or 'host' (got: %s)." $componentName (ternary "none" (join ", " $modes) (eq (len $modes) 0))) }}
+      {{- range $field := list "connectionFromEnv" "connectionFromSecret" "host" }}
+        {{- if index $trigger $field }}{{- $modes = append $modes $field }}{{- end }}
       {{- end }}
       {{- if $trigger.host }}
         {{- $passwordModes := list }}

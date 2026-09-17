@@ -219,11 +219,14 @@
         },
         "query": {
           "type": "string",
+          "minLength": 1,
           "description": "SQL query returning a single numeric value used as the scaling metric. Passed to KEDA verbatim; the chart does not inspect it. When comparing against 'timestamp without time zone' columns, avoid a bare now(): it returns a timestamptz, so Postgres reinterprets the column in the session's TimeZone and the comparison silently skews on a non-UTC session. Use (now() AT TIME ZONE 'UTC') when the column stores UTC wall-clock values."
         },
         "targetQueryValue": {
           "type": ["string", "number"],
-          "description": "Target value per replica for the HPA"
+          "minLength": 1,
+          "exclusiveMinimum": 0,
+          "description": "Target value per replica for the HPA. Must be non-empty and greater than zero."
         },
         "activationTargetQueryValue": {
           "type": ["string", "number"],
@@ -232,6 +235,7 @@
         },
         "connectionFromEnv": {
           "type": "string",
+          "minLength": 1,
           "description": "Name of an env var on the scaled workload holding a libpq connection string. Mutually exclusive with 'connectionFromSecret' and 'host'."
         },
         "connectionFromSecret": {
@@ -240,6 +244,7 @@
         },
         "host": {
           "type": "string",
+          "minLength": 1,
           "description": "Database host. When set, 'port', 'userName', 'dbName', 'sslmode' and one of 'passwordFromEnv'/'passwordFromSecret' are required. Mutually exclusive with 'connectionFromEnv' and 'connectionFromSecret'."
         },
         "port": {
@@ -267,7 +272,21 @@
           "description": "Secret holding the password, rendered as a TriggerAuthentication 'password' parameter. Only valid alongside 'host'."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["connectionFromEnv"],
+          "properties": { "connectionFromSecret": false, "host": false }
+        },
+        {
+          "required": ["connectionFromSecret"],
+          "properties": { "connectionFromEnv": false, "host": false }
+        },
+        {
+          "required": ["host"],
+          "properties": { "connectionFromEnv": false, "connectionFromSecret": false }
+        }
+      ]
     },
     "livenessProbe": {
       "description": "Periodic probe of container liveness. Container will be restarted if the probe fails. Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes",
