@@ -223,10 +223,9 @@
           "description": "SQL query returning a single numeric value used as the scaling metric. Passed to KEDA verbatim; the chart does not inspect it. When comparing against 'timestamp without time zone' columns, avoid a bare now(): it returns a timestamptz, so Postgres reinterprets the column in the session's TimeZone and the comparison silently skews on a non-UTC session. Use (now() AT TIME ZONE 'UTC') when the column stores UTC wall-clock values."
         },
         "targetQueryValue": {
-          "type": ["string", "number"],
-          "minLength": 1,
+          "type": "number",
           "exclusiveMinimum": 0,
-          "description": "Target value per replica for the HPA. Must be non-empty and greater than zero."
+          "description": "Target value per replica for the HPA. Must be a number greater than zero; the chart quotes it when rendering."
         },
         "activationTargetQueryValue": {
           "type": ["string", "number"],

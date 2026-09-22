@@ -55,7 +55,7 @@ components:
         - type: postgresql
           connectionFromEnv: POSTGRES_CONNECTION_STRING
           query: "SELECT count(*) FROM tasks WHERE state = 'pending'"
-          targetQueryValue: "1"
+          targetQueryValue: 1
           activationTargetQueryValue: "0"
 
   consumer-pg-secret:
@@ -72,7 +72,7 @@ components:
             name: app-db
             key: PG_CONNECTION
           query: "SELECT count(*) FROM jobs WHERE done = false"
-          targetQueryValue: "5"
+          targetQueryValue: 5
 
   consumer-pg-fields:
     type: consumer
@@ -93,4 +93,4 @@ components:
           sslmode: require
           passwordFromEnv: POSTGRES_PASSWORD
           query: "SELECT count(*) FROM jobs WHERE done = false"
-          targetQueryValue: "5"
+          targetQueryValue: 5
